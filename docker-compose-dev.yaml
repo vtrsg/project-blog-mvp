@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  blog_mvp:
+    container_name: blog_mvp_dev
+    image: blog_mvp_dev_img
+    build: .
+    tty: true
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - psql
+    env_file:
+      - ./.env.dev
+
+  psql:
+    container_name: psql
+    image: postgres:13-alpine
+    volumes:
+      - data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    env_file:
+      - ./.env.dev
+    ports:
+      - 5435:5432
+
+volumes:
+  data:
+    
