@@ -39,3 +39,7 @@
 * Stop:
 
 	`docker-compose -f docker-compose-dev.yaml stop `
+
+## Diagrama do Banco de dados:
+
+![Diagrama do Banco de Dados](./diagram_db.png)
