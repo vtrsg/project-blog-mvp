@@ -4,13 +4,14 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import (
     PostApi,
+    SaveImage
 )
 
 app_name = "api"
 
-router = routers.DefaultRouter()
-router.register(r'post', PostApi, basename='post')
-
 urlpatterns = [
-    path('', include(router.urls)),
+    path('post/', PostApi, name='post'),
+    path('post/<int:id>/', PostApi, name='post-detail'),
+
+    path('post/<int:id>/image/', SaveImage, name='save_image_post'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
