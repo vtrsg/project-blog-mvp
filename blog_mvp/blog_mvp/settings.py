@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'api',
+    'api.apps.ApiConfig',
 ]
 
 MIDDLEWARE = [
@@ -122,7 +122,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-
+STATIC_URL = '/static/'
+STATIC_ROOT = DATA_DIR / 'static'
 MEDIA_URL = '/post-images/'
 MEDIA_ROOT = DATA_DIR / 'post-images'
 
