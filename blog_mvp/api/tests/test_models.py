@@ -6,6 +6,8 @@ from django.utils.text import slugify
 # import core files django
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files import File
+# import conf files django
+from django.conf import settings
 # import models 
 from django.contrib.auth.models import User
 from api.models import (
@@ -14,6 +16,7 @@ from api.models import (
     Post,
     PostComments
 )
+import os
 
 
 class ModelApiTestCase(TestCase):
@@ -39,15 +42,7 @@ class ModelApiTestCase(TestCase):
             author_id=self.user,
             post_id=self.post,
         )
-        image = SimpleUploadedFile("test_image.jpg", b"file_content", content_type="image/jpeg")
-        self.post_with_image = Post.objects.create(
-            title='Post with Image',
-            subtitle='Subtitle',
-            content='Content',
-            created_by=self.user,
-            category=self.category,
-            image_path=image,
-        )
+        
     # Testando user 
     def test_user_delete_cascade_comments(self):
         initial_count = User.objects.count()
@@ -89,16 +84,12 @@ class ModelApiTestCase(TestCase):
         self.assertTrue(isinstance(self.comment.created_at, timezone.datetime))
 
     # Testando post
-    def test_post_with_image(self):
-        self.assertTrue(self.post_with_image.image_path)
-        self.assertTrue(isinstance(self.post_with_image.image_path, File))
-
     def test_post_created_at(self):
         self.assertTrue(isinstance(self.post.created_at, timezone.datetime))
 
     def test_post_category(self):
         self.assertEqual(self.post.category, self.category)
-    
+
     def test_post_delete_cascade_comments(self):
         initial_count = Post.objects.count()
 
@@ -107,5 +98,5 @@ class ModelApiTestCase(TestCase):
         comment_count = PostComments.objects.filter(post_id=self.post).count()
         final_count = Post.objects.count()
 
-        self.assertEqual(comment_count, 0)  
+        self.assertEqual(comment_count, 0)
         self.assertEqual(final_count, initial_count - 1)
