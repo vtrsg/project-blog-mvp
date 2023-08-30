@@ -1,7 +1,11 @@
 from django.conf import settings
+from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated, BasePermission, AllowAny
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, permission_classes
 from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.files.storage import default_storage
 
 import os
@@ -21,9 +25,26 @@ from .serializers import (
     CategorySerializer,
     PostSerializer,
     PostCommentsSerializer
-)
+    )
 
 @csrf_exempt
+def LoginApi(req):
+    if req.method == 'POST':
+        user_data = JSONParser().parse(req)
+
+        user = authenticate(username=user_data['username'], password=user_data['password'])
+
+        if user:
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            return JsonResponse(access_token, safe=False, status=200)
+        else:
+            return JsonResponse('Invalid credentials', safe=False, status=401)
+    return JsonResponse('Invalid method', safe=False, status=400)
+
+@api_view(['GET', 'PUT', 'DELETE', 'POST'])
+@permission_classes([IsAuthenticated])
 def UserApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -33,6 +54,7 @@ def UserApi(req, id=0):
 
         users_serializer = UserSerializer(user, many=True)
         return JsonResponse(users_serializer.data, safe=False)
+    
     elif req.method == 'POST':
         user_data = JSONParser().parse(req)
 
@@ -69,7 +91,8 @@ def UserApi(req, id=0):
     else:
         return JsonResponse('Invalid request', safe=False, status=400)
 
-@csrf_exempt
+@api_view(['GET', 'PUT', 'DELETE', 'POST'])
+@permission_classes([IsAuthenticated])
 def TagApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -109,7 +132,8 @@ def TagApi(req, id=0):
     else:
         return JsonResponse('Invalid request.', status=400, safe=False)
     
-@csrf_exempt
+@api_view(['GET', 'PUT', 'DELETE', 'POST'])
+@permission_classes([IsAuthenticated])
 def CategoryApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -149,7 +173,8 @@ def CategoryApi(req, id=0):
     else:
         return JsonResponse('Invalid request.', status=400, safe=False)
     
-@csrf_exempt
+@api_view(['GET', 'PUT', 'DELETE', 'POST'])
+@permission_classes([IsAuthenticated])
 def PostCommentsApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -179,7 +204,8 @@ def PostCommentsApi(req, id=0):
     else:
         return JsonResponse('Invalid request.', status=400, safe=False)
 
-@csrf_exempt
+@api_view(['GET', 'PUT', 'DELETE', 'POST'])
+@permission_classes([IsAuthenticated])
 def PostApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -219,7 +245,8 @@ def PostApi(req, id=0):
     else:
         return JsonResponse('Invalid method', safe=False, status=400)
 
-@csrf_exempt
+@api_view(['DELETE', 'POST'])
+@permission_classes([IsAuthenticated])
 def SaveImage(req, id):
     file = req.FILES.get('image')  
     file_extension = os.path.splitext(file.name)[1]

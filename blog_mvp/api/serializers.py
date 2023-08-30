@@ -12,7 +12,8 @@ from .models import (
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
+        fields = fields = ['id', 'username', 'first_name', 'last_name',
+                           'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -53,6 +54,7 @@ class PostSerializer(serializers.ModelSerializer):
         post.save()
 
         return post
+
 
 class PostCommentsSerializer(serializers.ModelSerializer):
     class Meta:
