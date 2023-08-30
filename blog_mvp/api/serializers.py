@@ -57,4 +57,4 @@ class PostSerializer(serializers.ModelSerializer):
 class PostCommentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostComments
-        fields = ['name', 'content', 'created_at', 'author_id', 'post_id']
+        fields = '__all__'

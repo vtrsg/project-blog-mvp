@@ -41,7 +41,6 @@ def TagApi(req, id=0):
             tag_serializer.save()
 
             return JsonResponse('Added successfully!!', safe=False)
-        
         return JsonResponse('Failed add!!', safe=False) 
     elif req.method == 'PUT':
         tag_data = JSONParser().parse(req)
@@ -52,7 +51,6 @@ def TagApi(req, id=0):
             tag_serializer.save()
 
             return JsonResponse('Updated successfully!!', safe=False)
-        
         return JsonResponse('Failed update!!', safe=False) 
     elif req.method == 'DELETE':
         try:
@@ -83,7 +81,6 @@ def CategoryApi(req, id=0):
             category_serializer.save()
 
             return JsonResponse('Added successfully!!', safe=False)
-        
         return JsonResponse('Failed add!!', safe=False) 
     elif req.method == 'PUT':
         category_data = JSONParser().parse(req)
@@ -94,7 +91,6 @@ def CategoryApi(req, id=0):
             category_serializer.save()
 
             return JsonResponse('Updated successfully!!', safe=False)
-        
         return JsonResponse('Failed update!!', safe=False) 
     elif req.method == 'DELETE':
         try:
@@ -106,6 +102,36 @@ def CategoryApi(req, id=0):
             return JsonResponse('Category not found.', status=404, safe=False)
     else:
         return JsonResponse('Invalid request.', status=400, safe=False)
+    
+@csrf_exempt
+def PostCommentsApi(req, id=0):
+    if req.method == 'GET':
+        if id != 0:
+            comment = PostComments.objects.filter(id=id)
+        else:
+            comment = PostComments.objects.all()
+        comments_serializer = PostCommentsSerializer(comment, many=True)
+
+        return JsonResponse(comments_serializer.data, safe=False)    
+    elif req.method == 'POST':
+        comment_data = JSONParser().parse(req)
+        comment_serializer = PostCommentsSerializer(data=comment_data)
+
+        if comment_serializer.is_valid():
+            comment_serializer.save()
+
+            return JsonResponse('Added successfully!!', safe=False)
+        return JsonResponse('Failed add!!', safe=False) 
+    elif req.method == 'DELETE':
+        try:
+            comment = PostComments.objects.get(id=id)
+            comment.delete()
+            
+            return JsonResponse('Deleted successfully!!', safe=False)
+        except PostComments.DoesNotExist:
+            return JsonResponse('Comment not found.', status=404, safe=False)
+    else:
+        return JsonResponse('Invalid request.', status=400, safe=False)
 
 @csrf_exempt
 def PostApi(req, id=0):
@@ -115,11 +141,9 @@ def PostApi(req, id=0):
         else:
             posts = Post.objects.all()
             
-        posts = Post.objects.all()
         posts_serializer = PostSerializer(posts, many=True)
 
         return JsonResponse(posts_serializer.data, safe=False)
-
     elif req.method == 'POST':
         post_data = JSONParser().parse(req)
 
@@ -128,9 +152,7 @@ def PostApi(req, id=0):
             post_serializer.save()
 
             return JsonResponse('Added successfully!!', safe=False)
-
         return JsonResponse('Failed add!!', safe=False)
-
     elif req.method == 'PUT':
         post_data = JSONParser().parse(req)
         post = Post.objects.get(id=id)
@@ -140,9 +162,7 @@ def PostApi(req, id=0):
             post_serializer.save()
 
             return JsonResponse('Updated successfully!!', safe=False)
-
         return JsonResponse('Failed update!!', safe=False)
-
     elif req.method == 'DELETE':
         try:
             post = Post.objects.get(id=id)
@@ -157,12 +177,11 @@ def PostApi(req, id=0):
 def SaveImage(request, id):
     file = request.FILES.get('image')  
     file_extension = os.path.splitext(file.name)[1]
-
-    file_extension = os.path.splitext(file.name)[1]
     new_file_name = f"post_{id}{file_extension}"
-    default_storage.save(new_file_name, file)
 
+    default_storage.save(new_file_name, file)
     destination_path = os.path.join(settings.MEDIA_ROOT, new_file_name)
+    
     post = Post.objects.get(id=id)
     post.image_path = destination_path
     post.contains_image = True

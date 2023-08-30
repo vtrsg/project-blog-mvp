@@ -5,6 +5,7 @@ from rest_framework import routers
 from .views import (
     TagApi,
     CategoryApi,
+    PostCommentsApi,
     PostApi,
     SaveImage
 )
@@ -16,6 +17,8 @@ urlpatterns = [
     path('tag/<int:id>/', TagApi, name='tag-detail'),
     path('category/', CategoryApi, name='category-list'),
     path('category/<int:id>/', CategoryApi, name='category-detail'),
+    path('comments/', PostCommentsApi, name='post-comments-list'),
+    path('comments/<int:id>/', PostCommentsApi, name='post-comments-detail'),
     path('post/', PostApi, name='post'),
     path('post/<int:id>/', PostApi, name='post-detail'),
 
