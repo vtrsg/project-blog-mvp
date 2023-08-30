@@ -22,6 +22,7 @@ from .serializers import (
     PostSerializer,
     PostCommentsSerializer
 )
+
 @csrf_exempt
 def TagApi(req, id=0):
     if req.method == 'GET':
@@ -63,10 +64,57 @@ def TagApi(req, id=0):
             return JsonResponse('Tag not found.', status=404, safe=False)
     else:
         return JsonResponse('Invalid request.', status=400, safe=False)
+    
+@csrf_exempt
+def CategoryApi(req, id=0):
+    if req.method == 'GET':
+        if id != 0:
+            category = Category.objects.filter(id=id)
+        else:
+            category = Category.objects.all()
+        categories_serializer = CategorySerializer(category, many=True)
+
+        return JsonResponse(categories_serializer.data, safe=False)    
+    elif req.method == 'POST':
+        category_data = JSONParser().parse(req)
+        category_serializer = CategorySerializer(data=category_data)
+
+        if category_serializer.is_valid():
+            category_serializer.save()
+
+            return JsonResponse('Added successfully!!', safe=False)
+        
+        return JsonResponse('Failed add!!', safe=False) 
+    elif req.method == 'PUT':
+        category_data = JSONParser().parse(req)
+        category = Category.objects.get(id=id)
+        
+        category_serializer = CategorySerializer(category, data=category_data)
+        if category_serializer.is_valid():
+            category_serializer.save()
+
+            return JsonResponse('Updated successfully!!', safe=False)
+        
+        return JsonResponse('Failed update!!', safe=False) 
+    elif req.method == 'DELETE':
+        try:
+            category = Category.objects.get(id=id)
+            category.delete()
+            
+            return JsonResponse('Deleted successfully!!', safe=False)
+        except Category.DoesNotExist:
+            return JsonResponse('Category not found.', status=404, safe=False)
+    else:
+        return JsonResponse('Invalid request.', status=400, safe=False)
 
 @csrf_exempt
 def PostApi(req, id=0):
     if req.method == 'GET':
+        if id != 0:
+            posts = Post.objects.filter(id=id)
+        else:
+            posts = Post.objects.all()
+            
         posts = Post.objects.all()
         posts_serializer = PostSerializer(posts, many=True)
 
@@ -76,9 +124,7 @@ def PostApi(req, id=0):
         post_data = JSONParser().parse(req)
 
         post_serializer = PostSerializer(data=post_data, partial=True)
-        print(post_serializer.is_valid())
         if post_serializer.is_valid():
-            print('valido')
             post_serializer.save()
 
             return JsonResponse('Added successfully!!', safe=False)
