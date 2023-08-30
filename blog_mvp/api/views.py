@@ -22,6 +22,47 @@ from .serializers import (
     PostSerializer,
     PostCommentsSerializer
 )
+@csrf_exempt
+def TagApi(req, id=0):
+    if req.method == 'GET':
+        if id != 0:
+            tag = Tag.objects.filter(id=id)
+        else:
+            tag = Tag.objects.all()
+        tags_serializer = TagSerializer(tag, many=True)
+
+        return JsonResponse(tags_serializer.data, safe=False)    
+    elif req.method == 'POST':
+        tag_data = JSONParser().parse(req)
+        tag_serializer = TagSerializer(data=tag_data)
+
+        if tag_serializer.is_valid():
+            tag_serializer.save()
+
+            return JsonResponse('Added successfully!!', safe=False)
+        
+        return JsonResponse('Failed add!!', safe=False) 
+    elif req.method == 'PUT':
+        tag_data = JSONParser().parse(req)
+        tag = Tag.objects.get(id=id)
+        
+        tag_serializer = TagSerializer(tag, data=tag_data)
+        if tag_serializer.is_valid():
+            tag_serializer.save()
+
+            return JsonResponse('Updated successfully!!', safe=False)
+        
+        return JsonResponse('Failed update!!', safe=False) 
+    elif req.method == 'DELETE':
+        try:
+            tag = Tag.objects.get(id=id)
+            tag.delete()
+            
+            return JsonResponse('Deleted successfully!!', safe=False)
+        except Tag.DoesNotExist:
+            return JsonResponse('Tag not found.', status=404, safe=False)
+    else:
+        return JsonResponse('Invalid request.', status=400, safe=False)
 
 @csrf_exempt
 def PostApi(req, id=0):

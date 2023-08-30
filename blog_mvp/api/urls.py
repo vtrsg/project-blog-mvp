@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path, include
 from rest_framework import routers
 from .views import (
+    TagApi,
     PostApi,
     SaveImage
 )
@@ -10,6 +11,8 @@ from .views import (
 app_name = "api"
 
 urlpatterns = [
+    path('tag/', TagApi, name='tag-list'),
+    path('tag/<int:id>/', TagApi, name='tag-detail'),
     path('post/', PostApi, name='post'),
     path('post/<int:id>/', PostApi, name='post-detail'),
 
