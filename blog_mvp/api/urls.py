@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path, include
 from rest_framework import routers
 from .views import (
+    UserApi,
     TagApi,
     CategoryApi,
     PostCommentsApi,
@@ -13,6 +14,8 @@ from .views import (
 app_name = "api"
 
 urlpatterns = [
+    path('user/', UserApi, name='user-list'),
+    path('user/<int:id>/', UserApi, name='user-detail'),
     path('tag/', TagApi, name='tag-list'),
     path('tag/<int:id>/', TagApi, name='tag-detail'),
     path('category/', CategoryApi, name='category-list'),
@@ -22,5 +25,5 @@ urlpatterns = [
     path('post/', PostApi, name='post'),
     path('post/<int:id>/', PostApi, name='post-detail'),
 
-    path('post/<int:id>/image/', SaveImage, name='save_image_post'),
+    path('post/<int:id>/image/', SaveImage, name='save-image-post'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

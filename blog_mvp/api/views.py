@@ -23,6 +23,45 @@ from .serializers import (
     PostCommentsSerializer
 )
 
+def UserApi(req, id=0):
+    if req.method == 'GET':
+        if id != 0:
+            user = User.objects.filter(id=id)
+        else:
+            user = User.objects.all()
+
+            users_serializer = UserSerializer(user, many=True)
+            return JsonResponse(users_serializer.data, safe=False)
+    elif req.method == 'POST':
+        user_data = JSONParser().parse(req)
+
+        user_serializer = UserSerializer(data=user_data, partial=True)
+        if user_serializer.is_valid():
+            user_serializer.save()
+
+            return JsonResponse({'Added successfully!!'}, safe=False)
+        return JsonResponse('Failed add!!', safe=False)
+    elif req.method == 'PUT':
+        user_data = JSONParser().parse(req)
+        user = User.objects.get(id=id)
+        
+        user_serializer = UserSerializer(user, data=user_data, partial=True)
+        if user_serializer.is_valid():
+            user_serializer.save()
+
+            return JsonResponse({'Updated successfully!!'})        
+        return JsonResponse({'User not found!!'}, safe=False)
+    elif req.method == 'DELETE':
+        try:
+            user = User.objects.filter(id=id)
+            user.delete()
+            return JsonResponse({'User deleted successfully!!'})
+        except User.DoesNotExist:
+            return JsonResponse({'User not found'}, status=404)
+    
+    else:
+        return JsonResponse({'Invalid request'}, status=400)
+
 @csrf_exempt
 def TagApi(req, id=0):
     if req.method == 'GET':
@@ -167,15 +206,15 @@ def PostApi(req, id=0):
         try:
             post = Post.objects.get(id=id)
             post.delete()
-            return JsonResponse({'message': 'Deleted successfully!!'}, status=200)
+            return JsonResponse({'Deleted successfully!!'}, status=200)
         except Post.DoesNotExist:
-            return JsonResponse({'error': 'Post not found'}, status=404)
+            return JsonResponse({'Post not found'}, status=404)
     else:
-        return JsonResponse({'error': 'Invalid method'}, status=400)
+        return JsonResponse({'Invalid method'}, status=400)
 
 @csrf_exempt
-def SaveImage(request, id):
-    file = request.FILES.get('image')  
+def SaveImage(req, id):
+    file = req.FILES.get('image')  
     file_extension = os.path.splitext(file.name)[1]
     new_file_name = f"post_{id}{file_extension}"
 
