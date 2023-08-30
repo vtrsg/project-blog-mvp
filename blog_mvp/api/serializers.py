@@ -12,7 +12,7 @@ from .models import (
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = fields = ['id', 'username', 'first_name', 'last_name', 'email', 'password', 'date_joined', 'is_active', 'is_staff', 'is_superuser', 'last_login']
+        fields = fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
 
 
 class TagSerializer(serializers.ModelSerializer):

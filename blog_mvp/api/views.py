@@ -23,6 +23,7 @@ from .serializers import (
     PostCommentsSerializer
 )
 
+@csrf_exempt
 def UserApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -30,37 +31,43 @@ def UserApi(req, id=0):
         else:
             user = User.objects.all()
 
-            users_serializer = UserSerializer(user, many=True)
-            return JsonResponse(users_serializer.data, safe=False)
+        users_serializer = UserSerializer(user, many=True)
+        return JsonResponse(users_serializer.data, safe=False)
     elif req.method == 'POST':
         user_data = JSONParser().parse(req)
 
-        user_serializer = UserSerializer(data=user_data, partial=True)
-        if user_serializer.is_valid():
-            user_serializer.save()
-
-            return JsonResponse({'Added successfully!!'}, safe=False)
-        return JsonResponse('Failed add!!', safe=False)
+        try:
+            user = User.objects.create_user(
+                username=user_data['username'],
+                first_name=user_data['first_name'],
+                last_name=user_data['last_name'],
+                email=user_data['email'],
+                password=user_data['password'],
+            )
+            return JsonResponse('Added successfully!!', safe=False)
+        except:
+            return JsonResponse('Failed add!!', safe=False, status=400)          
     elif req.method == 'PUT':
         user_data = JSONParser().parse(req)
-        user = User.objects.get(id=id)
         
-        user_serializer = UserSerializer(user, data=user_data, partial=True)
-        if user_serializer.is_valid():
-            user_serializer.save()
-
-            return JsonResponse({'Updated successfully!!'})        
-        return JsonResponse({'User not found!!'}, safe=False)
+        try:
+            user = User.objects.get(id=id)
+            for key, value in user_data.items():
+                setattr(user, key, value)
+            user.save()
+            
+            return JsonResponse('Updated successfully!!', safe=False)
+        except User.DoesNotExist:
+            return JsonResponse('User not found', safe=False, status=404)
     elif req.method == 'DELETE':
         try:
-            user = User.objects.filter(id=id)
-            user.delete()
-            return JsonResponse({'User deleted successfully!!'})
+            User.objects.filter(id=id).update(is_active=False)
+
+            return JsonResponse('User deleted successfully!!', safe=False)
         except User.DoesNotExist:
-            return JsonResponse({'User not found'}, status=404)
-    
+            return JsonResponse('User not found', safe=False, status=404)   
     else:
-        return JsonResponse({'Invalid request'}, status=400)
+        return JsonResponse('Invalid request', safe=False, status=400)
 
 @csrf_exempt
 def TagApi(req, id=0):
@@ -206,11 +213,11 @@ def PostApi(req, id=0):
         try:
             post = Post.objects.get(id=id)
             post.delete()
-            return JsonResponse({'Deleted successfully!!'}, status=200)
+            return JsonResponse('Deleted successfully!!', safe=False, status=200)
         except Post.DoesNotExist:
-            return JsonResponse({'Post not found'}, status=404)
+            return JsonResponse('Post not found', safe=False, status=404)
     else:
-        return JsonResponse({'Invalid method'}, status=400)
+        return JsonResponse('Invalid method', safe=False, status=400)
 
 @csrf_exempt
 def SaveImage(req, id):
