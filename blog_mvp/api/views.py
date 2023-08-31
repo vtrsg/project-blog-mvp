@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
-from rest_framework.permissions import IsAuthenticated, BasePermission, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from django.http.response import JsonResponse
@@ -43,19 +43,9 @@ def LoginApi(req):
             return JsonResponse('Invalid credentials', safe=False, status=401)
     return JsonResponse('Invalid method', safe=False, status=400)
 
-@api_view(['GET', 'PUT', 'DELETE', 'POST'])
-@permission_classes([IsAuthenticated])
-def UserApi(req, id=0):
-    if req.method == 'GET':
-        if id != 0:
-            user = User.objects.filter(id=id)
-        else:
-            user = User.objects.all()
-
-        users_serializer = UserSerializer(user, many=True)
-        return JsonResponse(users_serializer.data, safe=False)
-    
-    elif req.method == 'POST':
+@csrf_exempt
+def LogonApi(req):
+    if req.method == 'POST':
         user_data = JSONParser().parse(req)
 
         try:
@@ -66,9 +56,28 @@ def UserApi(req, id=0):
                 email=user_data['email'],
                 password=user_data['password'],
             )
-            return JsonResponse('Added successfully!!', safe=False)
+
+            user = authenticate(username=user_data['username'], password=user_data['password'])
+
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            return JsonResponse(access_token, safe=False)
         except:
-            return JsonResponse('Failed add!!', safe=False, status=400)          
+            return JsonResponse('Failed add!!', safe=False, status=400)
+    return JsonResponse('Invalid method', safe=False, status=400)   
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def UserApi(req, id=0):
+    if req.method == 'GET':
+        if id != 0:
+            user = User.objects.filter(id=id)
+        else:
+            user = User.objects.all()
+
+        users_serializer = UserSerializer(user, many=True)
+        return JsonResponse(users_serializer.data, safe=False)       
     elif req.method == 'PUT':
         user_data = JSONParser().parse(req)
         
@@ -91,8 +100,8 @@ def UserApi(req, id=0):
     else:
         return JsonResponse('Invalid request', safe=False, status=400)
 
-@api_view(['GET', 'PUT', 'DELETE', 'POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def TagApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -132,8 +141,8 @@ def TagApi(req, id=0):
     else:
         return JsonResponse('Invalid request.', status=400, safe=False)
     
-@api_view(['GET', 'PUT', 'DELETE', 'POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def CategoryApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -173,8 +182,8 @@ def CategoryApi(req, id=0):
     else:
         return JsonResponse('Invalid request.', status=400, safe=False)
     
-@api_view(['GET', 'PUT', 'DELETE', 'POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def PostCommentsApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -204,8 +213,8 @@ def PostCommentsApi(req, id=0):
     else:
         return JsonResponse('Invalid request.', status=400, safe=False)
 
-@api_view(['GET', 'PUT', 'DELETE', 'POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def PostApi(req, id=0):
     if req.method == 'GET':
         if id != 0:
@@ -237,27 +246,37 @@ def PostApi(req, id=0):
         return JsonResponse('Failed update!!', safe=False)
     elif req.method == 'DELETE':
         try:
-            post = Post.objects.get(id=id)
-            post.delete()
+            Post.objects.filter(id=id).update(status=False)
             return JsonResponse('Deleted successfully!!', safe=False, status=200)
         except Post.DoesNotExist:
             return JsonResponse('Post not found', safe=False, status=404)
     else:
         return JsonResponse('Invalid method', safe=False, status=400)
 
-@api_view(['DELETE', 'POST'])
+@api_view(['POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def SaveImage(req, id):
-    file = req.FILES.get('image')  
-    file_extension = os.path.splitext(file.name)[1]
-    new_file_name = f"post_{id}{file_extension}"
+    if req.method == 'POST':
+        file = req.FILES.get('image')  
+        file_extension = os.path.splitext(file.name)[1]
+        new_file_name = f"post_{id}{file_extension}"
 
-    default_storage.save(new_file_name, file)
-    destination_path = os.path.join(settings.MEDIA_ROOT, new_file_name)
-    
-    post = Post.objects.get(id=id)
-    post.image_path = destination_path
-    post.contains_image = True
-    post.save()
+        default_storage.save(new_file_name, file)
+        destination_path = os.path.join(settings.MEDIA_ROOT, new_file_name)
 
-    return JsonResponse('Image added successfully!!', safe=False)
+        post = Post.objects.get(id=id)
+        post.image_path = destination_path
+        post.contains_image = True
+        post.save()
+
+        return JsonResponse('Image added successfully!!', safe=False)
+    elif req.method == 'DELETE':
+        post = Post.objects.get(id=id)
+        os.remove(post.image_path)
+        post.image_path = ''
+        post.contains_image = False
+        post.save()
+
+        return JsonResponse('Deleted successfully!!', safe=False, status=200)
+    else:
+        return JsonResponse('Invalid method', safe=False, status=400)

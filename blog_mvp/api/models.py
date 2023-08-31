@@ -4,9 +4,7 @@ from django.utils.text import slugify
 from django.utils import timezone
 # import user model django
 from django.contrib.auth.models import User
-# import utils
-#from utils.utils_models import upload_image_to
-import os
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
@@ -36,7 +34,7 @@ class Category(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length=65, null=False, blank=False)
     subtitle = models.CharField(max_length=255, null=False, blank=False)
-    status = models.BooleanField(default=False, null=False, blank=False)
+    status = models.BooleanField(default=True, null=False, blank=False)
     content = models.TextField(null=False, blank=False)
     image_path = models.CharField(max_length=100)
     contains_image = models.BooleanField(default=False, null=False, blank=False)

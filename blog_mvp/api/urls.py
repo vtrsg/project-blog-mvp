@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path, include
-from rest_framework import routers
+from django.urls import path
 
 from .views import (
     UserApi,
     LoginApi,
+    LogonApi,
     TagApi,
     CategoryApi,
     PostCommentsApi,
@@ -17,7 +17,8 @@ app_name = "api"
 
 urlpatterns = [
     path('user/', UserApi, name='user-list'),
-    path('login/', LoginApi, name='login'),
+    path('user/login/', LoginApi, name='login'),
+    path('user/logon/', LogonApi, name='logon'),
     path('user/<int:id>/', UserApi, name='user-detail'),
     path('tag/', TagApi, name='tag-list'),
     path('tag/<int:id>/', TagApi, name='tag-detail'),
