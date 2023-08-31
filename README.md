@@ -56,7 +56,7 @@
 
 * Executando testes no models:
 
-	`docker-compose -f docker-compose-dev.yaml stop `
+	`docker exec -ti blog_mvp_dev python blog_mvp/manage.py test `
 
 ## Diagrama do Banco de dados:
 
