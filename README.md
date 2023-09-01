@@ -2,7 +2,7 @@
 
 ## Sobre: 
     Esse projeto se trata da primeira versão de um Blog 
-    Atualmente ele está com a Primeira versão estável disponibilizada para clonar na main. 
+    Atualmente ele está na versão 0.0.1 estável, disponibilizada para clonar na main. 
 
 ## Tecnologias utilizadas: 
 - Django
@@ -56,7 +56,7 @@
 
 * Executando testes no models:
 
-	`docker exec -ti blog_mvp_dev python blog_mvp/manage.py test `
+	`docker exec -ti blog_mvp_dev python blog_mvp/manage.py test api`
 
 ## Diagrama do Banco de dados:
 
@@ -178,7 +178,7 @@ DELETE /localhost:8000/user/1/
 ### Endpoint Tag  
  `/tag/`
 
-**Descrição:** Essa rota permite criar, alterar, deletar ou retornar categorias. 
+**Descrição:** Essa rota permite criar, alterar, deletar ou retornar tags. 
 
 **Métodos:** GET, POST, PUT, DELETE
 
@@ -389,11 +389,11 @@ Chaves estrangeiras para otimização de consultas e integridade de dados, ultim
 
 * Segurança: 
 
-SimultaneidadeUso de autenticação e autorização, csrf, tratamento de erros sem exibir informações comprometedoras, django orm para evitar ataques de SQL injection e restrições de acesso.
+Uso de autenticação e autorização, csrf, tratamento de erros sem exibir informações comprometedoras, django orm para evitar ataques de SQL injection e restrições de acesso.
 
 * Simultaneidade: 
 
-Monitorar da desempenho da API e escalar horizontalmente adicionando mais servidores e máquinas virtuais e realizar testes de carga para identificar possíveis gargalos. 
+Monitorar desempenho da API e escalar horizontalmente adicionando mais servidores e máquinas virtuais e realizar testes de carga para identificar possíveis gargalos. 
 
 
 ## Próximas Features
